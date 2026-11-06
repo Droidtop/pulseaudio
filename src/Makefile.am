@@ -1517,6 +1517,12 @@ bin_SCRIPTS += utils/qpaeq
 endif
 endif
 
+modlibexec_LTLIBRARIES += module-aaudio-sink.la
+module_aaudio_sink_la_SOURCES = modules/aaudio/module-aaudio-sink.c
+module_aaudio_sink_la_LDFLAGS = $(MODULE_LDFLAGS) -laaudio
+module_aaudio_sink_la_LIBADD = $(MODULE_LIBADD)
+module_aaudio_sink_la_CFLAGS = $(AM_CFLAGS) -DPA_MODULE_NAME=module_aaudio_sink
+
 # Simple protocol
 
 module_simple_protocol_tcp_la_SOURCES = modules/module-protocol-stub.c
