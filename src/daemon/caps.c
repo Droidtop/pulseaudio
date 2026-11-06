@@ -36,64 +36,11 @@
 
 #include "caps.h"
 
-/* Glibc <= 2.2 has broken unistd.h */
-#if defined(__linux__) && (__GLIBC__ <= 2 && __GLIBC_MINOR__ <= 2)
-int setresgid(gid_t r, gid_t e, gid_t s);
-int setresuid(uid_t r, uid_t e, uid_t s);
-#endif
-
-/* Drop root rights when called SUID root */
+/* Disable privilege dropping on Android. */
 void pa_drop_root(void) {
-
-#ifdef HAVE_GETUID
-    uid_t uid;
-    gid_t gid;
-
-    pa_log_debug("Cleaning up privileges.");
-    uid = getuid();
-    gid = getgid();
-
-#if defined(HAVE_SETRESUID)
-    pa_assert_se(setresuid(uid, uid, uid) >= 0);
-    pa_assert_se(setresgid(gid, gid, gid) >= 0);
-#elif defined(HAVE_SETREUID)
-    pa_assert_se(setreuid(uid, uid) >= 0);
-    pa_assert_se(setregid(gid, gid) >= 0);
-#else
-    pa_assert_se(setuid(uid) >= 0);
-    pa_assert_se(seteuid(uid) >= 0);
-    pa_assert_se(setgid(gid) >= 0);
-    pa_assert_se(setegid(gid) >= 0);
-#endif
-
-    pa_assert_se(getuid() == uid);
-    pa_assert_se(geteuid() == uid);
-    pa_assert_se(getgid() == gid);
-    pa_assert_se(getegid() == gid);
-
-    if (uid != 0)
-        pa_drop_caps();
-#endif
+    return;
 }
 
 void pa_drop_caps(void) {
-#ifdef HAVE_SYS_CAPABILITY_H
-#if defined(__linux__)
-    cap_t caps;
-    pa_assert_se(caps = cap_init());
-    pa_assert_se(cap_clear(caps) == 0);
-    pa_assert_se(cap_set_proc(caps) == 0);
-    pa_assert_se(cap_free(caps) == 0);
-#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-    /* FreeBSD doesn't have this functionality, even though sys/capability.h is
-     * available. See https://bugs.freedesktop.org/show_bug.cgi?id=72580 */
-    pa_log_warn("FreeBSD cannot drop extra capabilities, implementation needed.");
-#else
-#error "Don't know how to do capabilities on your system.  Please send a patch."
-#endif /* __linux__ */
-#else /* HAVE_SYS_CAPABILITY_H */
-    pa_log_warn("Normally all extra capabilities would be dropped now, but "
-                "that's impossible because PulseAudio was built without "
-                "capabilities support.");
-#endif
+    return;
 }
